@@ -1,5 +1,7 @@
 # SCCM-Helpers
 
+Modules and scripts I have created through the years to assist with working with SCCM. 
+
 ## Modules
 
 ### [PS-SCCM-Functions-Module](https://github.com/userVII/SCCM-Helpers/blob/main/PS-SCCM-Functions-Module.psm1)
