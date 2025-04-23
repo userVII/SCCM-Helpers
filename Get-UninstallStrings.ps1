@@ -43,7 +43,7 @@ foreach($uninstaller in $64bitUninstallers){
     $arr += Add-RegValuesToArray -ProgramRegistryName $uninstaller -Arch 64
 }
 
-$32bitUninstallers = = Get-ChildItem -Path "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall"
+$32bitUninstallers = Get-ChildItem -Path "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall"
 foreach($uninstaller in $32bitUninstallers){
     $arr += Add-RegValuesToArray -ProgramRegistryName $uninstaller -Arch 32
 }
