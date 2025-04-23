@@ -58,47 +58,58 @@ function Get-SCCMComputersFromCollection(){
         [string] $CollectionID   
     )
 
-    $attemptSCCMImport = Test-ForSCCMModule
-    if($attemptSCCMImport){
-        Write-Information "SCCM module imported successfully" -InformationAction Continue
-
-        # Customizations
-        $initParams = @{}
+    begin{
+        $initLocation = Get-Location
         $sccmMachineArray = @()
-
-        Write-Verbose "Connecting to the SCCM coonsole..."
-        Write-Verbose "SiteCode: $SiteCode"
-        Write-Verbose "Provider Machine Name: $ProviderMachineName"
-        Write-Verbose "Collection ID: $CollectionID"
-        Write-Verbose ""
-
-        if($null -eq (Get-PSDrive -Name $SiteCode -PSProvider CMSite -ErrorAction SilentlyContinue)) {
-            New-PSDrive -Name $SiteCode -PSProvider CMSite -Root $ProviderMachineName @initParams
-        }
-
-        Set-Location "$($SiteCode):\" @initParams
-
-        $pcList = Get-CMCollectionMember -CollectionId $CollectionID
-      
-
-        foreach($pc in $pcList){
-            $objectPC = New-Object System.Object
-            $objectPC | Add-Member -type NoteProperty -name SCCM-PCName -value $($pc.Name)
-            $objectPC | Add-Member -type NoteProperty -name SCCM-SerialNumber -value $($pc.SerialNumber)
-            $objectPC | Add-Member -type NoteProperty -name SCCM-Active -value $($pc.IsActive)
-            $objectPC | Add-Member -type NoteProperty -name SCCM-DeviceOSBuild -value $($pc.DeviceOSBuild)
-            $objectPC | Add-Member -type NoteProperty -name SCCM-MACAddress -value $($pc.MACAddress)
-            $objectPC | Add-Member -type NoteProperty -name SCCM-UserName  -value $($pc.UserName )
-            $objectPC | Add-Member -type NoteProperty -name SCCM-LastLoggedInUser -value $($pc.LastLogonUser)
-            $objectPC | Add-Member -type NoteProperty -name SCCM-LastPolicyRequest -value $($pc.LastPolicyRequest)
-            $objectPC | Add-Member -type NoteProperty -name SCCM-LastActiveRequest -value $($pc.LastActiveTime)
-            $objectPC | Add-Member -type NoteProperty -name SCCM-ResourceType -value $($pc.ResourceType)
-            $sccmMachineArray += $objectPC
-        }
-
-        Set-Location "C:\Windows\System32"
+    }
     
-        #unmount psdrive
+    process{
+        $attemptSCCMImport = Test-ForSCCMModule
+        if($attemptSCCMImport){
+            Write-Information "SCCM module imported successfully" -InformationAction Continue
+
+            # Customizations
+            $initParams = @{}
+            
+            Write-Verbose "Connecting to the SCCM coonsole..."
+            Write-Verbose "SiteCode: $SiteCode"
+            Write-Verbose "Provider Machine Name: $ProviderMachineName"
+            Write-Verbose "Collection ID: $CollectionID"
+            Write-Verbose ""
+
+            if($null -eq (Get-PSDrive -Name $SiteCode -PSProvider CMSite -ErrorAction SilentlyContinue)) {
+                New-PSDrive -Name $SiteCode -PSProvider CMSite -Root $ProviderMachineName @initParams
+            }
+
+            Set-Location "$($SiteCode):\" @initParams
+
+            $pcList = Get-CMCollectionMember -CollectionId $CollectionID
+        
+            foreach($pc in $pcList){
+                $objectPC = New-Object System.Object
+                $objectPC | Add-Member -type NoteProperty -name SCCM-PCName -value $($pc.Name)
+                $objectPC | Add-Member -type NoteProperty -name SCCM-SerialNumber -value $($pc.SerialNumber)
+                $objectPC | Add-Member -type NoteProperty -name SCCM-Active -value $($pc.IsActive)
+                $objectPC | Add-Member -type NoteProperty -name SCCM-DeviceOSBuild -value $($pc.DeviceOSBuild)
+                $objectPC | Add-Member -type NoteProperty -name SCCM-MACAddress -value $($pc.MACAddress)
+                $objectPC | Add-Member -type NoteProperty -name SCCM-UserName  -value $($pc.UserName )
+                $objectPC | Add-Member -type NoteProperty -name SCCM-LastLoggedInUser -value $($pc.LastLogonUser)
+                $objectPC | Add-Member -type NoteProperty -name SCCM-LastPolicyRequest -value $($pc.LastPolicyRequest)
+                $objectPC | Add-Member -type NoteProperty -name SCCM-LastActiveRequest -value $($pc.LastActiveTime)
+                $objectPC | Add-Member -type NoteProperty -name SCCM-ResourceType -value $($pc.ResourceType)
+                $sccmMachineArray += $objectPC
+            }
+
+            
+        }else{
+            Write-Information "SCCM module could not be imported. SCCM functionality is not possible." -InformationAction Continue
+            return $null
+        }
+    }
+
+    end{
+        Set-Location $initLocation
+        
         try{
             Get-PSDrive -Name $SiteCode -ErrorAction SilentlyContinue | Remove-PSDrive -Force
         }catch{
@@ -106,10 +117,8 @@ function Get-SCCMComputersFromCollection(){
         }
 
         return $sccmMachineArray
-    }else{
-        Write-Information "SCCM module could not be imported. SCCM functionality is not possible." -InformationAction Continue
-        return $null
     }
+    
 }
 
 <# Export Controls #>
